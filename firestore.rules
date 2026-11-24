@@ -1,0 +1,43 @@
+rules_version = '2';
+
+// These rules are the real security boundary. Anything the website does
+// can be skipped by someone calling the database directly, but not these.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Signed in with a verified @columbia.edu Google account.
+    function isColumbia() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.matches('.*@columbia[.]edu$');
+    }
+
+    function isOwner(uid) {
+      return isColumbia() && request.auth.uid == uid;
+    }
+
+    function validProfile(p) {
+      return p.keys().hasOnly(['name', 'contact', 'courses', 'visible', 'updatedAt'])
+        && p.name is string && p.name.size() > 0 && p.name.size() <= 80
+        && p.contact is string && p.contact.size() > 0 && p.contact.size() <= 200
+        && p.courses is list && p.courses.size() <= 60
+        && p.visible is bool
+        && p.updatedAt == request.time;
+    }
+
+    match /profiles/{uid} {
+      // Read one profile: your own, or anyone's visible one.
+      allow get: if isOwner(uid) || (isColumbia() && resource.data.visible == true);
+
+      // Search: only visible profiles, and at most 50 per request,
+      // which slows down anyone trying to copy the whole directory.
+      allow list: if isColumbia()
+        && resource.data.visible == true
+        && request.query.limit <= 50;
+
+      // Write: only your own profile, only in the expected shape.
+      allow create, update: if isOwner(uid) && validProfile(request.resource.data);
+      allow delete: if isOwner(uid);
+    }
+  }
+}

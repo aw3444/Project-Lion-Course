@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LionCourse</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>LionCourse</h1>
+    <p class="tagline">Find Columbia students who've taken a course, and ask them about it.</p>
+    <div id="user-bar" hidden>
+      <span id="user-email"></span>
+      <button id="sign-out" class="link">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Shown when signed out -->
+    <section id="signed-out" hidden>
+      <p>Sign in with your Columbia (LionMail) account to search the directory and add yourself to it.</p>
+      <button id="sign-in">Sign in with Columbia Google account</button>
+      <p id="sign-in-error" class="error" hidden></p>
+    </section>
+
+    <!-- Shown when signed in -->
+    <section id="signed-in" hidden>
+      <div class="card">
+        <h2>Search by course</h2>
+        <form id="search-form">
+          <input id="search-input" placeholder="e.g. COMS4444" autocomplete="off" required>
+          <button type="submit">Search</button>
+        </form>
+        <p id="search-status" class="muted"></p>
+        <ul id="results"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Your listing</h2>
+        <form id="profile-form">
+          <label>Name
+            <input id="p-name" maxlength="80" required>
+          </label>
+          <label>How to reach you
+            <input id="p-contact" maxlength="200" placeholder="e.g. abcd1234@columbia.edu" required>
+          </label>
+          <label>Courses you've taken and are happy to talk about
+            <textarea id="p-courses" rows="3" placeholder="COMS4444, IEOR3700, MUSI3333"></textarea>
+          </label>
+          <label class="inline">
+            <input type="checkbox" id="p-visible" checked>
+            Show me in search results
+          </label>
+          <div class="row">
+            <button type="submit">Save</button>
+            <button type="button" id="delete-profile" class="danger" hidden>Delete my listing</button>
+          </div>
+          <p id="profile-status" class="muted"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
