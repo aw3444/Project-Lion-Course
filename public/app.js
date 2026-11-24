@@ -1,10 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
-  deleteUser, reauthenticateWithPopup,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, deleteDoc,
+  getFirestore, doc, getDoc, setDoc,
   collection, query, where, limit, getDocs, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
@@ -108,32 +107,6 @@ $("profile-form").addEventListener("submit", async (e) => {
     $("profile-status").textContent = "Saved.";
   } catch (err) {
     $("profile-status").textContent = `Couldn't save: ${err.message}`;
-  }
-});
-
-$("delete-profile").addEventListener("click", async () => {
-  const ok = window.confirm(
-    "Delete your listing and your LionCourse account? This removes everything stored about you " +
-    "and signs you out. You can sign up again later. This can't be undone.");
-  if (!ok) return;
-  const user = auth.currentUser;
-  try {
-    // 1. The listing (name, contact, courses).
-    await deleteDoc(doc(db, "profiles", user.uid));
-    // 2. The sign-in record (email, account ID) kept by Firebase Authentication.
-    try {
-      await deleteUser(user);
-    } catch (err) {
-      // Firebase only allows this shortly after signing in; if it's been a while,
-      // ask the person to confirm with Google once more, then retry.
-      if (err.code !== "auth/requires-recent-login") throw err;
-      await reauthenticateWithPopup(user, provider);
-      await deleteUser(user);
-    }
-    // deleteUser signs the person out, which switches the page to the signed-out view.
-    showSignInError("Your listing and account were deleted.");
-  } catch (err) {
-    $("profile-status").textContent = `Couldn't finish deleting: ${err.message}`;
   }
 });
 

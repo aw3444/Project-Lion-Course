@@ -27,7 +27,7 @@ Reach out with your questions. Replies aren't guaranteed, but you'll know who to
 ## Privacy
 
 - Only students signed in with a @columbia.edu account can see the directory.
-- You can hide or delete your listing at any time.
+- You can hide your listing at any time; email to have it deleted permanently.
 - Sign-in goes through Columbia's Google login, so LionCourse never sees or stores your password.
 - Full details: [privacy policy](https://projectlioncourse.web.app/privacy.html) and [terms](https://projectlioncourse.web.app/terms.html).
 
