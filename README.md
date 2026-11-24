@@ -2,6 +2,8 @@
 
 A website where Columbia students can find other students who have taken a course, and ask them about it.
 
+**Live at [projectlioncourse.web.app](https://projectlioncourse.web.app)** (Columbia accounts only).
+
 ## Why
 
 Ever wanted to take a Columbia course, only to find nothing about it on CULPA or in the Vergil course evaluations? Or found a review but had follow-up questions, with no way to ask the anonymous author?
@@ -22,11 +24,12 @@ LionCourse supplements existing options (Reddit, major-specific group chats) by 
 
 Reach out with your questions. Replies aren't guaranteed, but you'll know who to ask.
 
-## Privacy (planned)
+## Privacy
 
-- Only students signed in with a Columbia account can see the directory.
-- You can hide or delete your profile at any time.
-- Sign-in goes through Columbia's Google login, so LionCourse never stores your password.
+- Only students signed in with a @columbia.edu account can see the directory.
+- You can hide or delete your listing at any time.
+- Sign-in goes through Columbia's Google login, so LionCourse never sees or stores your password.
+- Full details: [privacy policy](https://projectlioncourse.web.app/privacy.html) and [terms](https://projectlioncourse.web.app/terms.html).
 
 ## Contact
 

@@ -60,6 +60,7 @@ onAuthStateChanged(auth, async (user) => {
     await loadProfile(user);
   } else {
     $("results").replaceChildren();
+    $("results-table").hidden = true;
     $("search-status").textContent = "";
   }
 });
@@ -127,11 +128,12 @@ $("search-form").addEventListener("submit", async (e) => {
   const code = normalizeCourse($("search-input").value);
   const results = $("results");
   results.replaceChildren();
+  $("results-table").hidden = true;
   if (!code) {
     $("search-status").textContent = "Enter a course code like COMS4444.";
     return;
   }
-  $("search-status").textContent = "Searching…";
+  $("search-status").textContent = "Searching...";
   try {
     const q = query(
       collection(db, "profiles"),
@@ -147,15 +149,15 @@ $("search-form").addEventListener("submit", async (e) => {
       : `No one has listed ${code} yet.`;
     for (const p of people) {
       // textContent (not innerHTML) so nobody can inject code through their name.
-      const li = document.createElement("li");
-      const name = document.createElement("div");
-      name.className = "name";
-      name.textContent = p.name;
-      const contact = document.createElement("div");
-      contact.textContent = p.contact;
-      li.append(name, contact);
-      results.append(li);
+      const tr = document.createElement("tr");
+      for (const value of [p.name, p.contact]) {
+        const td = document.createElement("td");
+        td.textContent = value;
+        tr.append(td);
+      }
+      results.append(tr);
     }
+    $("results-table").hidden = people.length === 0;
   } catch (err) {
     $("search-status").textContent = `Search failed: ${err.message}`;
   }

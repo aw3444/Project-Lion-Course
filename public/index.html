@@ -3,64 +3,103 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LionCourse</title>
+  <title>LionCourse: ask someone who took the class</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>LionCourse</h1>
-    <p class="tagline">Find Columbia students who've taken a course, and ask them about it.</p>
-    <div id="user-bar" hidden>
-      <span id="user-email"></span>
-      <button id="sign-out" class="link">Sign out</button>
+    <div class="page">
+      <h1 class="wordmark"><a href="/">LionCourse</a></h1>
+      <div id="user-bar" hidden>
+        <span id="user-email"></span> ·
+        <button id="sign-out" class="link">Sign out</button>
+      </div>
     </div>
   </header>
 
-  <main>
+  <main class="page">
     <!-- Shown when signed out -->
-    <section id="signed-out" hidden>
-      <p>Sign in with your Columbia (LionMail) account to search the directory and add yourself to it.</p>
-      <button id="sign-in">Sign in with Columbia Google account</button>
-      <p id="sign-in-error" class="error" hidden></p>
-    </section>
+    <div id="signed-out" hidden>
+      <section>
+        <h2>Ask someone who took the class.</h2>
+        <p>
+          CULPA and Vergil evaluations are great when a course has reviews. When it doesn't,
+          or when you have a follow-up question for an anonymous reviewer, there's nobody to ask.
+        </p>
+        <p>
+          LionCourse is a directory of Columbia students who are willing to talk about courses
+          they've taken. Search a course code and you get a list of people you can email.
+        </p>
+        <div class="example">COMS4444 → Alice Brown, Bob Smith, Charlie Winters</div>
+        <p>
+          Adding yourself takes a few minutes: your name, how to reach you, and the courses
+          you're happy to answer questions about. You can hide or delete your listing whenever you want.
+        </p>
+        <div class="row">
+          <button id="sign-in">Sign in with your Columbia account</button>
+        </div>
+        <p class="muted">Only @columbia.edu accounts can sign in or see the directory.</p>
+        <p id="sign-in-error" class="error" hidden></p>
+      </section>
+    </div>
 
     <!-- Shown when signed in -->
-    <section id="signed-in" hidden>
-      <div class="card">
+    <div id="signed-in" hidden>
+      <section>
         <h2>Search by course</h2>
         <form id="search-form">
-          <input id="search-input" placeholder="e.g. COMS4444" autocomplete="off" required>
+          <input id="search-input" placeholder="COMS4444" autocomplete="off" aria-label="Course code" required>
           <button type="submit">Search</button>
         </form>
         <p id="search-status" class="muted"></p>
-        <ul id="results"></ul>
-      </div>
+        <table id="results-table" hidden>
+          <thead><tr><th>Name</th><th>Contact</th></tr></thead>
+          <tbody id="results"></tbody>
+        </table>
+      </section>
 
-      <div class="card">
+      <section>
         <h2>Your listing</h2>
         <form id="profile-form">
-          <label>Name
-            <input id="p-name" maxlength="80" required>
+          <label for="p-name">Name</label>
+          <input id="p-name" maxlength="80" required>
+
+          <label for="p-contact">How to reach you
+            <span class="hint">Email, phone, Instagram, whatever you'd actually answer.</span>
           </label>
-          <label>How to reach you
-            <input id="p-contact" maxlength="200" placeholder="e.g. abcd1234@columbia.edu" required>
+          <input id="p-contact" maxlength="200" required>
+
+          <label for="p-courses">Courses
+            <span class="hint">Ones you've taken and don't mind questions about. Separate with commas.</span>
           </label>
-          <label>Courses you've taken and are happy to talk about
-            <textarea id="p-courses" rows="3" placeholder="COMS4444, IEOR3700, MUSI3333"></textarea>
-          </label>
+          <textarea id="p-courses" rows="3" placeholder="COMS4444, IEOR3700, MUSI3333"></textarea>
+
           <label class="inline">
             <input type="checkbox" id="p-visible" checked>
             Show me in search results
           </label>
+
           <div class="row">
             <button type="submit">Save</button>
-            <button type="button" id="delete-profile" class="danger" hidden>Delete my listing</button>
+            <button type="button" id="delete-profile" class="secondary" hidden>Delete my listing</button>
+            <span id="profile-status" class="muted"></span>
           </div>
-          <p id="profile-status" class="muted"></p>
+          <p class="muted">
+            By saving, you agree to the <a href="terms.html">terms</a> and
+            <a href="privacy.html">privacy policy</a>.
+          </p>
         </form>
-      </div>
-    </section>
+      </section>
+    </div>
   </main>
+
+  <footer>
+    <div class="page">
+      Made by a Columbia student. Questions or problems: <a href="mailto:ming.wei@columbia.edu">ming.wei@columbia.edu</a>
+      <span class="sep">·</span><a href="privacy.html">Privacy</a>
+      <span class="sep">·</span><a href="terms.html">Terms</a>
+    </div>
+  </footer>
 
   <script type="module" src="app.js"></script>
 </body>
