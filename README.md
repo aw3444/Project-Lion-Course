@@ -1,5 +1,4 @@
 # Project-Lion-Course
-A website where students can list the courses they're taking and how to reach them.
 
 Hi! Project LionCourse is a website where students can search for other students who have taken certain courses. Students list the courses they’ve taken and how to reach them. 
 
