@@ -7,7 +7,7 @@ import {
   collection, query, where, limit, getDocs, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
-import { normalizeCourse, parseCourseList } from "./courses.js";
+import { normalizeCourse, termOptions, termSortKey } from "./courses.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -15,6 +15,8 @@ const db = getFirestore(app);
 
 const ALLOWED_DOMAIN = "columbia.edu";
 const MAX_RESULTS = 50; // must match the limit in firestore.rules
+const MAX_COURSES = 60;  // must match the limit in firestore.rules
+const TERMS = termOptions();
 
 const $ = (id) => document.getElementById(id);
 
@@ -67,43 +69,120 @@ onAuthStateChanged(auth, async (user) => {
 
 // ---------- Your listing ----------
 
+// One row per course: code, semester (optional), professor (optional).
+function addCourseRow({ code = "", term = "", professor = "" } = {}) {
+  const row = document.createElement("div");
+  row.className = "course-row";
+
+  const codeInput = document.createElement("input");
+  codeInput.className = "code";
+  codeInput.placeholder = "COMS4444";
+  codeInput.maxLength = 20;
+  codeInput.setAttribute("aria-label", "Course code");
+  codeInput.value = code;
+
+  const termSelect = document.createElement("select");
+  termSelect.className = "term";
+  termSelect.setAttribute("aria-label", "Semester taken");
+  const choices = ["", ...TERMS];
+  // Keep an older saved semester selectable even after it scrolls off the menu.
+  if (term && !TERMS.includes(term)) choices.push(term);
+  for (const t of choices) {
+    const option = document.createElement("option");
+    option.value = t;
+    option.textContent = t || "Semester?";
+    termSelect.append(option);
+  }
+  termSelect.value = term;
+
+  const profInput = document.createElement("input");
+  profInput.className = "prof";
+  profInput.placeholder = "Professor";
+  profInput.maxLength = 80;
+  profInput.setAttribute("aria-label", "Professor");
+  profInput.value = professor;
+
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "link";
+  remove.textContent = "Remove";
+  remove.addEventListener("click", () => {
+    row.remove();
+    if (!$("course-rows").children.length) addCourseRow();
+  });
+
+  row.append(codeInput, termSelect, profInput, remove);
+  $("course-rows").append(row);
+  return row;
+}
+
+$("add-course").addEventListener("click", () => {
+  addCourseRow().querySelector(".code").focus();
+});
+
+// Reads the course rows. Returns { courses, details, errors }.
+function readCourseRows() {
+  const courses = [];
+  const details = {};
+  const errors = [];
+  for (const row of $("course-rows").children) {
+    const raw = row.querySelector(".code").value.trim();
+    const term = row.querySelector(".term").value;
+    const professor = row.querySelector(".prof").value.trim();
+    if (!raw && !term && !professor) continue; // empty row
+    const code = normalizeCourse(raw);
+    if (!code) { errors.push(raw ? `"${raw}" isn't a course code` : "a row is missing its course code"); continue; }
+    if (details[code]) { errors.push(`${code} is listed twice`); continue; }
+    courses.push(code);
+    details[code] = {};
+    if (term) details[code].term = term;
+    if (professor) details[code].professor = professor;
+  }
+  return { courses, details, errors };
+}
+
 async function loadProfile(user) {
   const snap = await getDoc(doc(db, "profiles", user.uid));
+  $("course-rows").replaceChildren();
   if (snap.exists()) {
     const p = snap.data();
     $("p-name").value = p.name;
     $("p-contact").value = p.contact;
-    $("p-courses").value = p.courses.join(", ");
     $("p-visible").checked = p.visible;
+    for (const code of p.courses) addCourseRow({ code, ...(p.details?.[code] || {}) });
   } else {
-    $("profile-form").reset();
     // Left blank on purpose: people choose what name and contact to share.
+    $("profile-form").reset();
   }
+  if (!$("course-rows").children.length) addCourseRow();
   $("profile-status").textContent = "";
 }
 
 $("profile-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const user = auth.currentUser;
-  const { valid, invalid } = parseCourseList($("p-courses").value);
-  if (invalid.length) {
-    $("profile-status").textContent =
-      `Couldn't read: ${invalid.join(", ")}. Use codes like COMS4444.`;
+  const { courses, details, errors } = readCourseRows();
+  if (errors.length) {
+    $("profile-status").textContent = `Please fix: ${errors.join("; ")}. Codes look like COMS4444.`;
     return;
   }
-  if (valid.length > 60) {
-    $("profile-status").textContent = "Please list at most 60 courses.";
+  if (courses.length > MAX_COURSES) {
+    $("profile-status").textContent = `Please list at most ${MAX_COURSES} courses.`;
     return;
   }
   try {
     await setDoc(doc(db, "profiles", user.uid), {
       name: $("p-name").value.trim(),
       contact: $("p-contact").value.trim(),
-      courses: valid,
+      courses,
+      details,
       visible: $("p-visible").checked,
       updatedAt: serverTimestamp(),
     });
-    $("p-courses").value = valid.join(", ");
+    // Show the cleaned-up codes, e.g. "coms w4444" becomes "COMS4444".
+    $("course-rows").replaceChildren();
+    for (const code of courses) addCourseRow({ code, ...details[code] });
+    if (!courses.length) addCourseRow();
     $("profile-status").textContent = "Saved.";
   } catch (err) {
     $("profile-status").textContent = `Couldn't save: ${err.message}`;
@@ -131,15 +210,19 @@ $("search-form").addEventListener("submit", async (e) => {
       limit(MAX_RESULTS),
     );
     const snap = await getDocs(q);
-    const people = snap.docs.map((d) => d.data())
-      .sort((a, b) => a.name.localeCompare(b.name));
+    // Attach this course's semester and professor; most recent semester first.
+    const people = snap.docs.map((d) => {
+      const p = d.data();
+      const info = p.details?.[code] || {};
+      return { name: p.name, contact: p.contact, term: info.term, professor: info.professor };
+    }).sort((a, b) => termSortKey(b.term) - termSortKey(a.term) || a.name.localeCompare(b.name));
     $("search-status").textContent = people.length
       ? `${people.length} student${people.length === 1 ? "" : "s"} listed for ${code}:`
       : `No one has listed ${code} yet.`;
     for (const p of people) {
-      // textContent (not innerHTML) so nobody can inject code through their name.
+      // textContent (not innerHTML) so nobody can inject code through what they type.
       const tr = document.createElement("tr");
-      for (const value of [p.name, p.contact]) {
+      for (const value of [p.name, p.contact, p.term || "", p.professor || ""]) {
         const td = document.createElement("td");
         td.textContent = value;
         tr.append(td);

@@ -12,13 +12,14 @@ LionCourse supplements existing options (Reddit, major-specific group chats) by 
 
 ## How it works
 
-**Sign up (about 5 minutes).** List the courses you've taken and are happy to talk about, plus how you'd like to be contacted:
+**Sign up (about 5 minutes).** Pick a name (a nickname is fine), how you'd like to be contacted, and the courses you're happy to talk about. For each course you can add the semester you took it and the professor:
 
-| Name     | Contact               | Courses                     |
-|----------|-----------------------|-----------------------------|
-| John Doe | abcd1234@columbia.edu | COMS4444, IEOR3700, MUSI3333 |
+| Course   | Semester    | Professor |
+|----------|-------------|-----------|
+| COMS4444 | Fall 2026   | Smith     |
+| IEOR3700 | Spring 2025 |           |
 
-**Search.** Look up a course, and you'll see students who have taken it:
+**Search.** Look up a course, and you'll see students who have taken it, most recent semester first:
 
 > Search: `COMS4444` → Alice Brown, Bob Smith, Charlie Winters
 

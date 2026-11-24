@@ -128,3 +128,19 @@ test("cannot save an empty name or a huge contact field", async () => {
   await assertFails(setDoc(doc(db, "profiles", "alice"), profile({ name: "" })));
   await assertFails(setDoc(doc(db, "profiles", "alice"), profile({ contact: "x".repeat(201) })));
 });
+
+// ----- Semester and professor details -----
+
+test("can save semester and professor details", async () => {
+  await assertSucceeds(setDoc(doc(columbia("alice"), "profiles", "alice"),
+    profile({ details: { COMS4444: { term: "Fall 2026", professor: "Smith" } } })));
+});
+
+test("details must be a map, not text", async () => {
+  await assertFails(setDoc(doc(columbia("alice"), "profiles", "alice"),
+    profile({ details: "Fall 2026" })));
+});
+
+test("listings saved before details existed still work", async () => {
+  await assertSucceeds(setDoc(doc(columbia("alice"), "profiles", "alice"), profile()));
+});

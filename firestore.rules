@@ -17,10 +17,11 @@ service cloud.firestore {
     }
 
     function validProfile(p) {
-      return p.keys().hasOnly(['name', 'contact', 'courses', 'visible', 'updatedAt'])
+      return p.keys().hasOnly(['name', 'contact', 'courses', 'details', 'visible', 'updatedAt'])
         && p.name is string && p.name.size() > 0 && p.name.size() <= 80
         && p.contact is string && p.contact.size() > 0 && p.contact.size() <= 200
         && p.courses is list && p.courses.size() <= 60
+        && (!('details' in p) || (p.details is map && p.details.size() <= 60))
         && p.visible is bool
         && p.updatedAt == request.time;
     }

@@ -53,7 +53,7 @@
         </form>
         <p id="search-status" class="muted"></p>
         <table id="results-table" hidden>
-          <thead><tr><th>Name</th><th>Contact</th></tr></thead>
+          <thead><tr><th>Name</th><th>Contact</th><th>Semester</th><th>Professor</th></tr></thead>
           <tbody id="results"></tbody>
         </table>
       </section>
@@ -71,10 +71,13 @@
           </label>
           <input id="p-contact" maxlength="200" required>
 
-          <label for="p-courses">Courses
-            <span class="hint">Ones you've taken and don't mind questions about. Separate with commas.</span>
-          </label>
-          <textarea id="p-courses" rows="3" placeholder="COMS4444, IEOR3700, MUSI3333"></textarea>
+          <fieldset id="course-fieldset">
+            <legend>Courses
+              <span class="hint">Ones you've taken and don't mind questions about. Semester and professor are optional.</span>
+            </legend>
+            <div id="course-rows"></div>
+            <button type="button" id="add-course" class="link">+ Add another course</button>
+          </fieldset>
 
           <label class="inline">
             <input type="checkbox" id="p-visible" checked>
