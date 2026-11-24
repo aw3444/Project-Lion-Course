@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+  deleteUser, reauthenticateWithPopup,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, deleteDoc,
@@ -75,12 +76,9 @@ async function loadProfile(user) {
     $("p-contact").value = p.contact;
     $("p-courses").value = p.courses.join(", ");
     $("p-visible").checked = p.visible;
-    $("delete-profile").hidden = false;
   } else {
     $("profile-form").reset();
-    $("p-name").value = user.displayName || "";
-    $("p-contact").value = user.email;
-    $("delete-profile").hidden = true;
+    // Left blank on purpose: people choose what name and contact to share.
   }
   $("profile-status").textContent = "";
 }
@@ -107,7 +105,6 @@ $("profile-form").addEventListener("submit", async (e) => {
       updatedAt: serverTimestamp(),
     });
     $("p-courses").value = valid.join(", ");
-    $("delete-profile").hidden = false;
     $("profile-status").textContent = "Saved.";
   } catch (err) {
     $("profile-status").textContent = `Couldn't save: ${err.message}`;
@@ -115,10 +112,29 @@ $("profile-form").addEventListener("submit", async (e) => {
 });
 
 $("delete-profile").addEventListener("click", async () => {
-  if (!window.confirm("Delete your listing? This can't be undone.")) return;
-  await deleteDoc(doc(db, "profiles", auth.currentUser.uid));
-  await loadProfile(auth.currentUser);
-  $("profile-status").textContent = "Your listing was deleted.";
+  const ok = window.confirm(
+    "Delete your listing and your LionCourse account? This removes everything stored about you " +
+    "and signs you out. You can sign up again later. This can't be undone.");
+  if (!ok) return;
+  const user = auth.currentUser;
+  try {
+    // 1. The listing (name, contact, courses).
+    await deleteDoc(doc(db, "profiles", user.uid));
+    // 2. The sign-in record (email, account ID) kept by Firebase Authentication.
+    try {
+      await deleteUser(user);
+    } catch (err) {
+      // Firebase only allows this shortly after signing in; if it's been a while,
+      // ask the person to confirm with Google once more, then retry.
+      if (err.code !== "auth/requires-recent-login") throw err;
+      await reauthenticateWithPopup(user, provider);
+      await deleteUser(user);
+    }
+    // deleteUser signs the person out, which switches the page to the signed-out view.
+    showSignInError("Your listing and account were deleted.");
+  } catch (err) {
+    $("profile-status").textContent = `Couldn't finish deleting: ${err.message}`;
+  }
 });
 
 // ---------- Search ----------

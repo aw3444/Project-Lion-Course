@@ -28,12 +28,12 @@
         </p>
         <p>
           LionCourse is a directory of Columbia students who are willing to talk about courses
-          they've taken. Search a course code and you get a list of people you can email.
+          they've taken. Search a course code and you get a list of people you can contact.
         </p>
         <div class="example">COMS4444 → Alice Brown, Bob Smith, Charlie Winters</div>
         <p>
           Adding yourself takes a few minutes: your name, how to reach you, and the courses
-          you're happy to answer questions about. You can hide or delete your listing whenever you want.
+          you're happy to answer questions about. You don't have to use your real name or school email, and you can hide or delete your listing whenever you want.
         </p>
         <div class="row">
           <button id="sign-in">Sign in with your Columbia account</button>
@@ -61,11 +61,13 @@
       <section>
         <h2>Your listing</h2>
         <form id="profile-form">
-          <label for="p-name">Name</label>
+          <label for="p-name">Name
+            <span class="hint">Your real name or a nickname, whatever you're comfortable with.</span>
+          </label>
           <input id="p-name" maxlength="80" required>
 
           <label for="p-contact">How to reach you
-            <span class="hint">Email, phone, Instagram, whatever you'd actually answer.</span>
+            <span class="hint">Any way you'd actually answer: a personal email, Instagram, Discord, etc. It doesn't have to be your school email.</span>
           </label>
           <input id="p-contact" maxlength="200" required>
 
@@ -81,7 +83,7 @@
 
           <div class="row">
             <button type="submit">Save</button>
-            <button type="button" id="delete-profile" class="secondary" hidden>Delete my listing</button>
+            <button type="button" id="delete-profile" class="secondary">Delete my listing and account</button>
             <span id="profile-status" class="muted"></span>
           </div>
           <p class="muted">
