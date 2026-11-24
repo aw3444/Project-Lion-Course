@@ -7,7 +7,7 @@ import {
   collection, query, where, limit, getDocs, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
-import { normalizeCourse, termOptions, termSortKey } from "./courses.js";
+import { normalizeCourse, normalizeProfessor, termOptions, termSortKey } from "./courses.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -97,7 +97,7 @@ function addCourseRow({ code = "", term = "", professor = "" } = {}) {
 
   const profInput = document.createElement("input");
   profInput.className = "prof";
-  profInput.placeholder = "Professor";
+  profInput.placeholder = "Professor (first and last name)";
   profInput.maxLength = 80;
   profInput.setAttribute("aria-label", "Professor");
   profInput.value = professor;
@@ -128,11 +128,16 @@ function readCourseRows() {
   for (const row of $("course-rows").children) {
     const raw = row.querySelector(".code").value.trim();
     const term = row.querySelector(".term").value;
-    const professor = row.querySelector(".prof").value.trim();
-    if (!raw && !term && !professor) continue; // empty row
+    const profRaw = row.querySelector(".prof").value.trim();
+    if (!raw && !term && !profRaw) continue; // empty row
     const code = normalizeCourse(raw);
-    if (!code) { errors.push(raw ? `"${raw}" isn't a course code` : "a row is missing its course code"); continue; }
+    if (!code) { errors.push(raw ? `"${raw}" isn't a course code (they look like COMS4444)` : "a row is missing its course code"); continue; }
     if (details[code]) { errors.push(`${code} is listed twice`); continue; }
+    const professor = normalizeProfessor(profRaw);
+    if (professor === null) {
+      errors.push(`for ${code}, write the professor as first and last name, like "Jane Smith"`);
+      continue;
+    }
     courses.push(code);
     details[code] = {};
     if (term) details[code].term = term;
@@ -163,7 +168,7 @@ $("profile-form").addEventListener("submit", async (e) => {
   const user = auth.currentUser;
   const { courses, details, errors } = readCourseRows();
   if (errors.length) {
-    $("profile-status").textContent = `Please fix: ${errors.join("; ")}. Codes look like COMS4444.`;
+    $("profile-status").textContent = `Please fix: ${errors.join("; ")}.`;
     return;
   }
   if (courses.length > MAX_COURSES) {

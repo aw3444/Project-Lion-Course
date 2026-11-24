@@ -56,3 +56,25 @@ export function termSortKey(term) {
   const match = /^(Spring|Summer|Fall) (\d{4})$/.exec(term || "");
   return match ? Number(match[2]) * 3 + SEASONS.indexOf(match[1]) : -1;
 }
+
+// ---------- Professor names ----------
+// Stored as "First Last" so the same person is written the same way.
+//   "prof. john smith"  -> "John Smith"
+//   "Dr. Ana de la Cruz" -> "Ana de la Cruz" (if any capitals were typed, they are kept as is)
+//   "Smith"             -> null (needs a first and last name)
+// Returns "" for an empty entry, the cleaned name, or null if it can't be used.
+const TITLES = /^(prof(essor)?|dr|mr|mrs|ms|mx)\.?\s+/i;
+const NAME_WORD = /^[\p{L}][\p{L}'’.-]*$/u;
+
+export function normalizeProfessor(raw) {
+  let name = String(raw).trim().replace(/\s+/g, " ");
+  while (TITLES.test(name)) name = name.replace(TITLES, "");
+  if (!name) return "";
+  if (name.includes(",")) return null; // "Smith, John": ask for First Last instead
+  const words = name.split(" ");
+  if (words.length < 2 || !words.every((w) => NAME_WORD.test(w))) return null;
+  // If the whole name was typed in lowercase, capitalize each word.
+  // Otherwise keep the person's own capitals (McDonald, de la Cruz).
+  if (name !== name.toLowerCase()) return words.join(" ");
+  return words.map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
+}
