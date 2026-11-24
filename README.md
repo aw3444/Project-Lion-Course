@@ -30,4 +30,4 @@ Reach out with your questions. Replies aren't guaranteed, but you'll know who to
 
 ## Contact
 
-Feedback or questions? Email ming.wei@columbia.edu.
+Feedback or questions? Email ming.wei@columbia.edu (or snakegnim123@gmail.com).
