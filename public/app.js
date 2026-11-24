@@ -69,6 +69,33 @@ onAuthStateChanged(auth, async (user) => {
 
 // ---------- Your listing ----------
 
+// Professor names other students already entered for a course, most common first.
+// Uses the same query as a search, so it only sees visible listings (at most 50).
+const professorCache = new Map(); // course code -> Promise<string[]>
+
+function professorsFor(code) {
+  if (!professorCache.has(code)) {
+    const q = query(
+      collection(db, "profiles"),
+      where("visible", "==", true),
+      where("courses", "array-contains", code),
+      limit(MAX_RESULTS),
+    );
+    const names = getDocs(q).then((snap) => {
+      const counts = new Map();
+      for (const d of snap.docs) {
+        const name = d.data().details?.[code]?.professor;
+        if (name) counts.set(name, (counts.get(name) || 0) + 1);
+      }
+      return [...counts.keys()].sort((a, b) => counts.get(b) - counts.get(a) || a.localeCompare(b));
+    }).catch(() => []); // suggestions are a convenience; never block the form
+    professorCache.set(code, names);
+  }
+  return professorCache.get(code);
+}
+
+let rowCount = 0;
+
 // One row per course: code, semester (optional), professor (optional).
 function addCourseRow({ code = "", term = "", professor = "" } = {}) {
   const row = document.createElement("div");
@@ -102,6 +129,20 @@ function addCourseRow({ code = "", term = "", professor = "" } = {}) {
   profInput.setAttribute("aria-label", "Professor");
   profInput.value = professor;
 
+  // Suggest professors other students listed for this course.
+  const suggestions = document.createElement("datalist");
+  suggestions.id = `prof-suggestions-${++rowCount}`;
+  profInput.setAttribute("list", suggestions.id);
+  async function refreshSuggestions() {
+    const courseCode = normalizeCourse(codeInput.value);
+    const names = courseCode ? await professorsFor(courseCode) : [];
+    // Skip if the code changed while we were waiting.
+    if (normalizeCourse(codeInput.value) !== courseCode) return;
+    suggestions.replaceChildren(...names.map((n) => Object.assign(document.createElement("option"), { value: n })));
+  }
+  codeInput.addEventListener("change", refreshSuggestions);
+  if (code) refreshSuggestions();
+
   const remove = document.createElement("button");
   remove.type = "button";
   remove.className = "link";
@@ -111,7 +152,7 @@ function addCourseRow({ code = "", term = "", professor = "" } = {}) {
     if (!$("course-rows").children.length) addCourseRow();
   });
 
-  row.append(codeInput, termSelect, profInput, remove);
+  row.append(codeInput, termSelect, profInput, remove, suggestions);
   $("course-rows").append(row);
   return row;
 }
@@ -188,6 +229,7 @@ $("profile-form").addEventListener("submit", async (e) => {
     $("course-rows").replaceChildren();
     for (const code of courses) addCourseRow({ code, ...details[code] });
     if (!courses.length) addCourseRow();
+    professorCache.clear();
     $("profile-status").textContent = "Saved.";
   } catch (err) {
     $("profile-status").textContent = `Couldn't save: ${err.message}`;
