@@ -1,12 +1,11 @@
-// Paste your project's settings from the Firebase console:
-// Project settings → General → Your apps → Web app → "SDK setup and configuration" → Config.
+// Settings from the Firebase console (Project settings → General → Your apps → lioncourse-web).
 // These values are not secret: they only identify which Firebase project to talk to.
 // Who can read and write data is controlled by firestore.rules.
 export const firebaseConfig = {
-  apiKey: "REPLACE_ME",
-  authDomain: "REPLACE_ME.firebaseapp.com",
-  projectId: "REPLACE_ME",
-  storageBucket: "REPLACE_ME.appspot.com",
-  messagingSenderId: "REPLACE_ME",
-  appId: "REPLACE_ME",
+  apiKey: "AIzaSyAeOwPxBdeuhxEnU9r410FrSvFhsQS8qWQ",
+  authDomain: "projectlioncourse.firebaseapp.com",
+  projectId: "projectlioncourse",
+  storageBucket: "projectlioncourse.firebasestorage.app",
+  messagingSenderId: "760151629010",
+  appId: "1:760151629010:web:419abc03b02148bc7d210b",
 };

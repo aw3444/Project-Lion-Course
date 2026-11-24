@@ -17,9 +17,10 @@ You need Node.js 20+ and Java 21+ (Java is only for the local test database).
 
 ```bash
 npm install
-npx firebase login
-npx firebase use --add      # pick the project you just made
+npx firebase login          # sign in with the Google account that owns the Firebase project
 ```
+
+The project (`projectlioncourse`) is already set in `.firebaserc`.
 
 ## 3. Run the privacy tests
 
